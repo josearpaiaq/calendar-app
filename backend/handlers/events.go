@@ -18,6 +18,14 @@ import (
 
 const uploadsDir = "./uploads"
 
+func RegisterRoutes(rg *gin.RouterGroup) {
+	rg.GET("/events", GetEvents)
+	rg.GET("/events/:id", GetEvent)
+	rg.POST("/events", CreateEvent)
+	rg.PUT("/events/:id", UpdateEvent)
+	rg.DELETE("/events/:id", DeleteEvent)
+}
+
 func GetEvents(c *gin.Context) {
 	month := c.Query("month") // format: YYYY-MM
 

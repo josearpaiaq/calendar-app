@@ -46,13 +46,7 @@ func main() {
 	r.Static("/uploads", uploadsDir)
 
 	api := r.Group("/api")
-	{
-		api.GET("/events", handlers.GetEvents)
-		api.GET("/events/:id", handlers.GetEvent)
-		api.POST("/events", handlers.CreateEvent)
-		api.PUT("/events/:id", handlers.UpdateEvent)
-		api.DELETE("/events/:id", handlers.DeleteEvent)
-	}
+	handlers.RegisterRoutes(api)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
