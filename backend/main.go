@@ -20,7 +20,7 @@ func buildCORSConfig() cors.Config {
 		return cors.Config{
 			AllowAllOrigins: true,
 			AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-			AllowHeaders:    []string{"Origin", "Content-Type", "Accept"},
+			AllowHeaders:    []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		}
 	}
 
@@ -34,7 +34,7 @@ func buildCORSConfig() cors.Config {
 	return cors.Config{
 		AllowOrigins:     origins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
 	}
 }
