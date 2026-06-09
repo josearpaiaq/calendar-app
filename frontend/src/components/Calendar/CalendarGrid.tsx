@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Printer, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Printer, Plus, Pencil } from 'lucide-react';
 import type { Event } from '../../types/event';
+import type { MonthSetting } from '../../api/settings';
 import CalendarDay from './CalendarDay';
+import MonthImageModal from '../MonthImageModal/MonthImageModal';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = [
@@ -11,16 +13,25 @@ const MONTHS = [
 
 interface Props {
   events: Event[];
+  monthSettings: MonthSetting[];
   onDayClick: (date: string) => void;
   onEventClick: (event: Event) => void;
   onPrint: () => void;
   onMonthChange?: (year: number, month: number) => void;
+  onUpdateMonthImage: (month: string, file: File) => Promise<unknown>;
 }
 
-export default function CalendarGrid({ events, onDayClick, onEventClick, onPrint, onMonthChange }: Props) {
+export default function CalendarGrid({ events, monthSettings, onDayClick, onEventClick, onPrint, onMonthChange, onUpdateMonthImage }: Props) {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
+  const [editingMonthImage, setEditingMonthImage] = useState(false);
+
+  const monthKey = String(month + 1).padStart(2, '0');
+  const currentSetting = monthSettings.find(s => s.month === monthKey);
+  const bgImage = currentSetting?.image_path
+    ? `${import.meta.env.VITE_API_URL ?? ''}${currentSetting.image_path}`
+    : null;
 
   const days = useMemo(() => {
     const firstDay = new Date(year, month, 1).getDay();
@@ -82,73 +93,116 @@ export default function CalendarGrid({ events, onDayClick, onEventClick, onPrint
     return date === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   };
 
+  const hasImage = !!bgImage;
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center gap-4">
-          <button onClick={prev} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            <ChevronLeft size={18} />
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800 min-w-44 text-center">
-            {MONTHS[month]} {year}
-          </h2>
-          <button onClick={next} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            <ChevronRight size={18} />
-          </button>
-        </div>
+    <>
+      <div
+        className="rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative"
+        style={bgImage ? {
+          backgroundImage: `url(${bgImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        } : { backgroundColor: 'white' }}
+      >
+        {/* dark overlay when image is set */}
+        {bgImage && <div className="absolute inset-0 bg-black/45 pointer-events-none z-0" />}
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Today
-          </button>
-          <button
-            onClick={onPrint}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Printer size={14} />
-            Print
-          </button>
-          <button
-            onClick={() => {
-              const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
-              const day = isCurrentMonth ? today.getDate() : 1;
-              onDayClick(`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            <Plus size={14} />
-            New Event
-          </button>
-        </div>
-      </div>
+        <div className="relative z-10">
+          {/* Header */}
+          <div className={`flex items-center justify-between px-6 py-4 ${hasImage ? 'border-b border-white/20' : 'border-b border-gray-100'}`}>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={prev}
+                className={`p-2 rounded-lg transition-colors ${hasImage ? 'hover:bg-white/20 text-white' : 'hover:bg-gray-100'}`}
+              >
+                <ChevronLeft size={18} />
+              </button>
 
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 border-b border-gray-100">
-        {WEEKDAYS.map(day => (
-          <div key={day} className="py-2 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">
-            {day}
+              <button
+                onClick={() => setEditingMonthImage(true)}
+                className={`flex items-center gap-2 group rounded-lg px-2 py-1 transition-colors ${hasImage ? 'hover:bg-white/20' : 'hover:bg-gray-50'}`}
+              >
+                <h2 className={`text-xl font-semibold min-w-44 text-center ${hasImage ? 'text-white' : 'text-gray-800'}`}>
+                  {MONTHS[month]} {year}
+                </h2>
+                <Pencil
+                  size={14}
+                  className={`transition-opacity ${hasImage ? 'text-white/70 opacity-0 group-hover:opacity-100' : 'text-gray-400 opacity-0 group-hover:opacity-100'}`}
+                />
+              </button>
+
+              <button
+                onClick={next}
+                className={`p-2 rounded-lg transition-colors ${hasImage ? 'hover:bg-white/20 text-white' : 'hover:bg-gray-100'}`}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${hasImage ? 'border border-white/30 text-white hover:bg-white/20' : 'border border-gray-200 hover:bg-gray-50'}`}
+              >
+                Today
+              </button>
+              <button
+                onClick={onPrint}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${hasImage ? 'border border-white/30 text-white hover:bg-white/20' : 'border border-gray-200 hover:bg-gray-50'}`}
+              >
+                <Printer size={14} />
+                Print
+              </button>
+              <button
+                onClick={() => {
+                  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+                  const day = isCurrentMonth ? today.getDate() : 1;
+                  onDayClick(`${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                <Plus size={14} />
+                New Event
+              </button>
+            </div>
           </div>
-        ))}
+
+          {/* Weekday headers */}
+          <div className={`grid grid-cols-7 ${hasImage ? 'border-b border-white/20' : 'border-b border-gray-100'}`}>
+            {WEEKDAYS.map(day => (
+              <div key={day} className={`py-2 text-center text-xs font-medium uppercase tracking-wide ${hasImage ? 'text-white/70' : 'text-gray-400'}`}>
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7">
+            {days.map((cell, i) => (
+              <CalendarDay
+                key={i}
+                date={cell.date}
+                events={eventsByDate[cell.date] ?? []}
+                isCurrentMonth={cell.current}
+                isToday={isToday(cell.date)}
+                hasMonthImage={hasImage}
+                onDayClick={onDayClick}
+                onEventClick={onEventClick}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7">
-        {days.map((cell, i) => (
-          <CalendarDay
-            key={i}
-            date={cell.date}
-            events={eventsByDate[cell.date] ?? []}
-            isCurrentMonth={cell.current}
-            isToday={isToday(cell.date)}
-            onDayClick={onDayClick}
-            onEventClick={onEventClick}
-          />
-        ))}
-      </div>
-    </div>
+      {editingMonthImage && (
+        <MonthImageModal
+          month={monthKey}
+          currentImagePath={currentSetting?.image_path ?? ''}
+          onSave={file => onUpdateMonthImage(monthKey, file)}
+          onClose={() => setEditingMonthImage(false)}
+        />
+      )}
+    </>
   );
 }

@@ -10,6 +10,11 @@ body {
   background-color: #f8fafc;
 }
 
+@keyframes bubble-float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50%       { transform: translateY(-3px) scale(1.07); }
+}
+
 @media print {
   .no-print {
     display: none !important;

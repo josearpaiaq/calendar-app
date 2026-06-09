@@ -1,72 +1,82 @@
 import type { Event } from '../../types/event';
 
-const GENERIC_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <rect width="48" height="48" rx="6" fill="#EFF6FF"/>
-  <path d="M16 20h16M16 24h10M16 28h8" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="34" cy="16" r="6" fill="#3B82F6"/>
-  <path d="M31 16l2 2 4-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`);
+// Fixed positions for up to 4 bubbles inside the cell
+const BUBBLE_POSITIONS = [
+  { bottom: '6px', left: '4px' },
+  { bottom: '6px', right: '4px' },
+  { bottom: '28px', left: '16px' },
+  { bottom: '28px', right: '16px' },
+];
+
+const BUBBLE_DURATIONS = ['2.2s', '2.8s', '3.1s', '2.5s'];
 
 interface Props {
   date: string;
   events: Event[];
   isCurrentMonth: boolean;
   isToday: boolean;
+  hasMonthImage: boolean;
   onDayClick: (date: string) => void;
   onEventClick: (event: Event) => void;
 }
 
-export default function CalendarDay({ date, events, isCurrentMonth, isToday, onDayClick, onEventClick }: Props) {
+export default function CalendarDay({ date, events, isCurrentMonth, isToday, hasMonthImage, onDayClick, onEventClick }: Props) {
   const dayNumber = parseInt(date.split('-')[2], 10);
+  const visible = events.slice(0, 4);
+  const overflow = events.length - 4;
+
+  const cellBg = hasMonthImage
+    ? isCurrentMonth ? 'bg-white/10 hover:bg-white/20' : 'bg-black/10'
+    : isCurrentMonth ? 'hover:bg-gray-50' : 'bg-gray-50/50';
+
+  const dayNumStyle = isToday
+    ? 'bg-blue-600 text-white'
+    : hasMonthImage
+      ? isCurrentMonth ? 'text-white' : 'text-white/40'
+      : isCurrentMonth ? 'text-gray-700' : 'text-gray-300';
 
   return (
     <div
-      className={`
-        min-h-24 p-1.5 border-b border-r border-gray-100 cursor-pointer
-        transition-colors hover:bg-gray-50 group
-        ${!isCurrentMonth ? 'bg-gray-50/50' : ''}
-      `}
+      className={`min-h-24 p-1.5 border-b border-r cursor-pointer transition-colors relative ${cellBg} ${hasMonthImage ? 'border-white/10' : 'border-gray-100'}`}
       onClick={() => onDayClick(date)}
     >
-      <div className="flex items-center justify-between mb-1">
-        <span className={`
-          text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full transition-colors
-          ${isToday ? 'bg-blue-600 text-white' : isCurrentMonth ? 'text-gray-700' : 'text-gray-300'}
-        `}>
-          {dayNumber}
-        </span>
-      </div>
+      <span className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full transition-colors ${dayNumStyle}`}>
+        {dayNumber}
+      </span>
 
-      <div className="space-y-0.5 overflow-hidden">
-        {events.slice(0, 3).map(event => (
+      {/* Bubbles */}
+      {visible.map((event, i) => {
+        const pos = BUBBLE_POSITIONS[i];
+        const bgStyle = event.image_path
+          ? { backgroundImage: `url(${import.meta.env.VITE_API_URL ?? ''}${event.image_path})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+          : { backgroundColor: event.color };
+
+        return (
           <button
             key={event.id}
+            title={`${event.title}${!event.all_day && event.start_time ? ` · ${event.start_time}` : ''}`}
             onClick={e => { e.stopPropagation(); onEventClick(event); }}
-            className="w-full text-left flex items-center gap-1 rounded-md px-1 py-0.5 hover:brightness-95 transition-all"
-            style={{ backgroundColor: event.color + '22' }}
-          >
-            <img
-              src={event.image_path || GENERIC_IMAGE}
-              alt=""
-              className="w-4 h-4 rounded object-cover flex-shrink-0"
-            />
-            <span
-              className="text-xs truncate font-medium"
-              style={{ color: event.color }}
-            >
-              {!event.all_day && event.start_time && (
-                <span className="mr-1 opacity-70">{event.start_time}</span>
-              )}
-              {event.title}
-            </span>
-          </button>
-        ))}
-        {events.length > 3 && (
-          <span className="text-xs text-gray-400 pl-1">+{events.length - 3} more</span>
-        )}
-      </div>
+            className="absolute w-6 h-6 rounded-full border-2 border-white/80 shadow-sm hover:scale-110 transition-transform"
+            style={{
+              ...pos,
+              ...bgStyle,
+              animation: `bubble-float ${BUBBLE_DURATIONS[i]} ease-in-out infinite`,
+            }}
+          />
+        );
+      })}
+
+      {/* Overflow count bubble */}
+      {overflow > 0 && (
+        <button
+          onClick={e => { e.stopPropagation(); onDayClick(date); }}
+          className="absolute w-6 h-6 rounded-full bg-gray-400/80 border-2 border-white/80 shadow-sm text-white flex items-center justify-center hover:scale-110 transition-transform"
+          style={{ bottom: '6px', right: '4px', fontSize: '9px', fontWeight: 700 }}
+          title={`${overflow} more events`}
+        >
+          +{overflow}
+        </button>
+      )}
     </div>
   );
 }
