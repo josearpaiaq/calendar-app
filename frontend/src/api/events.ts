@@ -1,16 +1,14 @@
-import axios from 'axios';
 import type { Event, CreateEventPayload } from '../types/event';
-
-const BASE = `${import.meta.env.VITE_API_URL ?? ''}/api`;
+import api from './api';
 
 export const fetchEvents = async (month?: string): Promise<Event[]> => {
   const params = month ? { month } : {};
-  const { data } = await axios.get<Event[]>(`${BASE}/events`, { params });
+  const { data } = await api.get<Event[]>(`/events`, { params });
   return data;
 };
 
 export const fetchEvent = async (id: string): Promise<Event> => {
-  const { data } = await axios.get<Event>(`${BASE}/events/${id}`);
+  const { data } = await api.get<Event>(`/events/${id}`);
   return data;
 };
 
@@ -25,7 +23,7 @@ export const createEvent = async (payload: CreateEventPayload): Promise<Event> =
   form.append('all_day', String(payload.all_day ?? true));
   if (payload.image) form.append('image', payload.image);
 
-  const { data } = await axios.post<Event>(`${BASE}/events`, form, {
+  const { data } = await api.post<Event>('/events', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;
@@ -42,12 +40,12 @@ export const updateEvent = async (id: string, payload: Partial<CreateEventPayloa
   if (payload.all_day !== undefined) form.append('all_day', String(payload.all_day));
   if (payload.image) form.append('image', payload.image);
 
-  const { data } = await axios.put<Event>(`${BASE}/events/${id}`, form, {
+  const { data } = await api.put<Event>(`/events/${id}`, form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return data;
 };
 
 export const deleteEvent = async (id: string): Promise<void> => {
-  await axios.delete(`${BASE}/events/${id}`);
+  await api.delete(`/events/${id}`);
 };
