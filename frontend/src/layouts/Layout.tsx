@@ -1,7 +1,14 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { logout } from '../api/auth';
 
 export default function Layout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -28,6 +35,12 @@ export default function Layout() {
             >
               Settings
             </Link>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+            >
+              Sign out
+            </button>
           </nav>
         </div>
       </header>
