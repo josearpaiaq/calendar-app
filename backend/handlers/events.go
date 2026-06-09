@@ -18,7 +18,7 @@ import (
 
 const uploadsDir = "./uploads"
 
-func RegisterRoutes(rg *gin.RouterGroup) {
+func RegisterEventRoutes(rg *gin.RouterGroup) {
 	rg.GET("/events", GetEvents)
 	rg.GET("/events/:id", GetEvent)
 	rg.POST("/events", CreateEvent)

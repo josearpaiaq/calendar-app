@@ -7,15 +7,23 @@ import (
 
 	"calendar-app/backend/config"
 	"calendar-app/backend/database"
-	"calendar-app/backend/handlers"
+	"calendar-app/backend/routes"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
-func getCORSOrigins() []string {
-	raw := config.GetEnv("CORS_ORIGINS", "http://localhost:5173")
+func buildCORSConfig() cors.Config {
+	raw := config.GetEnv("CORS_ORIGINS", "*")
+	if strings.TrimSpace(raw) == "*" {
+		return cors.Config{
+			AllowAllOrigins: true,
+			AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowHeaders:    []string{"Origin", "Content-Type", "Accept"},
+		}
+	}
+
 	parts := strings.Split(raw, ",")
 	origins := make([]string, 0, len(parts))
 	for _, p := range parts {
@@ -23,7 +31,12 @@ func getCORSOrigins() []string {
 			origins = append(origins, trimmed)
 		}
 	}
-	return origins
+	return cors.Config{
+		AllowOrigins:     origins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		AllowCredentials: true,
+	}
 }
 
 func main() {
@@ -35,18 +48,12 @@ func main() {
 
 	r := gin.Default()
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     getCORSOrigins(),
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
-		AllowCredentials: true,
-	}))
+	r.Use(cors.New(buildCORSConfig()))
 
 	uploadsDir := config.GetEnv("UPLOADS_DIR", "./uploads")
 	r.Static("/uploads", uploadsDir)
 
-	api := r.Group("/api")
-	handlers.RegisterRoutes(api)
+	routes.Register(r)
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})

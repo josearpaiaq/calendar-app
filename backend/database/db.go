@@ -30,7 +30,7 @@ func Connect() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	err = DB.AutoMigrate(&models.Event{})
+	err = DB.AutoMigrate(&models.Event{}, &models.MonthSetting{})
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
