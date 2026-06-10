@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Printer, Plus, Pencil } from 'lucide-react';
-import type { Event } from '../../types/event';
-import type { MonthSetting } from '../../api/settings';
+import type { Event } from '@src/types/event';
+import type { MonthSetting } from '@api/settings';
 import CalendarDay from './CalendarDay';
-import MonthImageModal from '../MonthImageModal/MonthImageModal';
+import MonthImageModal from '@components/MonthImageModal/MonthImageModal';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = [

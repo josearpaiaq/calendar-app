@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { logout } from '../api/auth';
+import { logout } from '@api/auth';
 
 export default function Layout() {
   const { pathname } = useLocation();

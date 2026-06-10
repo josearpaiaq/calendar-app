@@ -1,4 +1,4 @@
-import type { Event, CreateEventPayload } from '../types/event';
+import type { Event, CreateEventPayload } from '@src/types/event';
 import api from './api';
 
 export const fetchEvents = async (month?: string): Promise<Event[]> => {

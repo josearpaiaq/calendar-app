@@ -3,7 +3,7 @@ import { useReactToPrint } from 'react-to-print';
 import { X, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import type { Event } from '../../types/event';
+import type { Event } from '@src/types/event';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',

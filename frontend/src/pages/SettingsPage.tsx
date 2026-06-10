@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ImageIcon, Pencil } from 'lucide-react';
-import { useMonthSettings } from '../hooks/useMonthSettings';
-import MonthImageModal from '../components/MonthImageModal/MonthImageModal';
+import { useMonthSettings } from '@hooks/useMonthSettings';
+import MonthImageModal from '@components/MonthImageModal/MonthImageModal';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',

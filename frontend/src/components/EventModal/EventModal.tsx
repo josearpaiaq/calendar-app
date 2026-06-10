@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Upload, Clock, Calendar } from 'lucide-react';
-import type { Event, CreateEventPayload } from '../../types/event';
+import type { Event, CreateEventPayload } from '@src/types/event';
+import Input from '@components/Input/Input';
 
 const DEFAULT_COLORS = [
   '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
@@ -82,17 +83,14 @@ export default function EventModal({ date, event, onClose, onSave, onDelete }: P
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-            <input
-              type="text"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="Event title"
-              required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+          <Input
+            label="Title *"
+            type="text"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="Event title"
+            required
+          />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -105,19 +103,18 @@ export default function EventModal({ date, event, onClose, onSave, onDelete }: P
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              <Calendar size={14} className="inline mr-1" />
-              Date *
-            </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
-              required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <Input
+            label={
+              <>
+                <Calendar size={14} className="inline mr-1" />
+                Date *
+              </>
+            }
+            type="date"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+            required
+          />
 
           <div className="flex items-center gap-2">
             <input
@@ -133,24 +130,24 @@ export default function EventModal({ date, event, onClose, onSave, onDelete }: P
           {!allDay && (
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Clock size={14} className="inline mr-1" />
-                  Start
-                </label>
-                <input
+                <Input
+                  label={
+                    <>
+                      <Clock size={14} className="inline mr-1" />
+                      Start
+                    </>
+                  }
                   type="time"
                   value={startTime}
                   onChange={e => setStartTime(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">End</label>
-                <input
+                <Input
+                  label="End"
                   type="time"
                   value={endTime}
                   onChange={e => setEndTime(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>

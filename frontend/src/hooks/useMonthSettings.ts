@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getMonthSettings, updateMonthImage } from '../api/settings';
-import type { MonthSetting } from '../api/settings';
+import { getMonthSettings, updateMonthImage } from '@api/settings';
+import type { MonthSetting } from '@api/settings';
 
 export function useMonthSettings() {
   const [settings, setSettings] = useState<MonthSetting[]>([]);

@@ -1,4 +1,4 @@
-import type { Event } from '../../types/event';
+import type { Event } from '@src/types/event';
 
 // Fixed positions for up to 4 bubbles inside the cell
 const BUBBLE_POSITIONS = [

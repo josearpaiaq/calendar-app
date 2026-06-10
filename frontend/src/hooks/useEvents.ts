@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchEvents, createEvent, updateEvent, deleteEvent } from '../api/events';
-import type { Event, CreateEventPayload } from '../types/event';
+import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@api/events';
+import type { Event, CreateEventPayload } from '@src/types/event';
 
 export function useEvents(month: string) {
   const [events, setEvents] = useState<Event[]>([]);

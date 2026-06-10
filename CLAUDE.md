@@ -50,6 +50,8 @@ Full-stack app: Go REST API + React SPA. The frontend never queries the DB direc
 - `components/EventModal/` — create/edit/delete form (sends `multipart/form-data`)
 - `components/PrintView/` — `MonthPrintView` using `html2canvas` + `jsPDF` and `react-to-print`
 
+**Path aliases**: `@src`, `@components`, `@pages`, `@layouts`, `@hooks`, `@api`, `@assets` map to `src/…` — declared in both `vite.config.ts` (`resolve.alias`) and `tsconfig.app.json` (`paths`); keep the two in sync. Use aliases for cross-folder imports; same-folder imports stay relative (`./`). There is deliberately no `@types` alias (TypeScript reserves that scope for DefinitelyTyped, error TS6137) — import shared types via `@src/types/…`.
+
 **State flow**: `App.tsx` holds `year`/`month` and the currently open modal. `useEvents(monthStr)` fetches events for the displayed month and exposes `addEvent`, `editEvent`, `removeEvent`. `CalendarGrid` calls `onMonthChange` when navigating so `App` stays in sync for `PrintView`.
 
 **Image handling**: all event API endpoints use `multipart/form-data`. The backend stores images under `./uploads/` and returns the path as `/uploads/<filename>`. On update, the old image file is deleted before saving the new one.

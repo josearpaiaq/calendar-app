@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import CalendarGrid from './components/Calendar/CalendarGrid';
-import EventModal from './components/EventModal/EventModal';
-import MonthPrintView from './components/PrintView/MonthPrintView';
-import { useEvents } from './hooks/useEvents';
-import { useMonthSettings } from './hooks/useMonthSettings';
-import type { Event } from './types/event';
+import CalendarGrid from '@components/Calendar/CalendarGrid';
+import EventModal from '@components/EventModal/EventModal';
+import MonthPrintView from '@components/PrintView/MonthPrintView';
+import { useEvents } from '@hooks/useEvents';
+import { useMonthSettings } from '@hooks/useMonthSettings';
+import type { Event } from '@src/types/event';
 
 export default function App() {
   const today = new Date();
