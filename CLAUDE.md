@@ -10,6 +10,7 @@ cd backend
 go run .          # start server on :8080
 go build .        # compile binary
 go test ./...     # run all tests
+go run ./cmd/seed # create the initial login user (SEED_USER_* in .env)
 ```
 
 ### Frontend (React/Vite)
@@ -23,7 +24,7 @@ npm run lint      # eslint
 
 ### Infrastructure
 ```bash
-docker compose up -d    # start PostgreSQL on port 5432
+docker compose up -d    # start PostgreSQL (5432) and pgAdmin (5051)
 docker compose down     # stop
 ```
 
@@ -57,7 +58,9 @@ Full-stack app: Go REST API + React SPA. The frontend never queries the DB direc
 
 ## Environment setup
 
-Three `.env` files are required (copy from `.env.sample`):
-- `.env` (root) — Docker Compose DB credentials
-- `backend/.env` — Go server config (DB connection, port, CORS origins, uploads dir)
-- `frontend/.env` — `BACKEND_URL` for Vite proxy (dev only), `VITE_API_URL` for production
+Three `.env` files, one per level — each has a commented `.env.sample` to copy from:
+- `.env` (root) — Docker Compose only: PostgreSQL credentials (`DB_*`) and pgAdmin login (`PGADMIN_DEFAULT_*`)
+- `backend/.env` — Go server: HTTP config (`PORT`, `CORS_ORIGINS`, `UPLOADS_DIR`), PostgreSQL connection (`DB_*`), `JWT_SECRET`, seed user (`SEED_USER_*`)
+- `frontend/.env` — Vite: `BACKEND_URL` (dev proxy, Node only) and `VITE_API_URL` (baked into the browser bundle — must stay defined: empty in dev so the proxy is used, public backend URL in production)
+
+`DB_USER`/`DB_PASSWORD`/`DB_NAME`/`DB_PORT` are intentionally duplicated between the root and backend files and must stay in sync: Docker Compose provisions the database with the root values; the backend connects using its own copy.

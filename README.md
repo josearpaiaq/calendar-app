@@ -39,10 +39,13 @@ Minimum values for local development:
 
 **.env** (root)
 ```env
-DB_USER=admin
-DB_PASSWORD=secret
-DB_NAME=calendardb
-DB_PORT=5432
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+DB_PORT=
+
+PGADMIN_DEFAULT_EMAIL=
+PGADMIN_DEFAULT_PASSWORD=
 ```
 
 **backend/.env**
@@ -52,10 +55,16 @@ CORS_ORIGINS=http://localhost:5173
 UPLOADS_DIR=./uploads
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=admin
-DB_PASSWORD=secret
-DB_NAME=calendardb
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
 DB_SSLMODE=disable
+
+# generate with: openssl rand -hex 32
+JWT_SECRET=<your-secret>
+
+SEED_USER_EMAIL=
+SEED_USER_PASSWORD=
 ```
 
 **frontend/.env**
@@ -64,13 +73,15 @@ BACKEND_URL=http://localhost:8080
 VITE_API_URL=
 ```
 
+> **Keep in sync:** `DB_USER`, `DB_PASSWORD`, `DB_NAME` and `DB_PORT` must be identical in the root and backend files — Docker Compose provisions the database with the root values and the Go server connects with its own copy. `VITE_API_URL` must always be *defined* (even if empty): the API client builds its base URL from it.
+
 ### 2. Start the database
 
 ```bash
 docker compose up -d
 ```
 
-Starts a PostgreSQL 16 container on port `5432`. The schema is created automatically by GORM when the backend boots.
+Starts a PostgreSQL 16 container on port `5432` and pgAdmin at [http://localhost:5051](http://localhost:5051) (log in with the `PGADMIN_DEFAULT_*` credentials). The schema is created automatically by GORM when the backend boots.
 
 ### 3. Start the backend
 
@@ -80,7 +91,17 @@ go run .
 # → Server running on :8080
 ```
 
-### 4. Start the frontend
+### 4. Create the initial user
+
+```bash
+cd backend
+go run ./cmd/seed
+# → user created: <SEED_USER_EMAIL>
+```
+
+Creates the login user from `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` in `backend/.env`.
+
+### 5. Start the frontend
 
 ```bash
 cd frontend
@@ -112,8 +133,8 @@ npm run dev
 
 ```
 calendar-app/
-├── docker-compose.yml     # PostgreSQL service
-├── .env                   # DB credentials for Docker Compose
+├── docker-compose.yml     # PostgreSQL + pgAdmin services
+├── .env                   # DB + pgAdmin credentials for Docker Compose
 ├── .env.sample
 │
 ├── backend/               # Go REST API
@@ -177,6 +198,8 @@ All endpoints are under `/api`. Images are served statically from `/uploads`.
 | `DB_PASSWORD` | PostgreSQL password |
 | `DB_NAME` | Database name |
 | `DB_PORT` | Host port mapped to PostgreSQL (default `5432`) |
+| `PGADMIN_DEFAULT_EMAIL` | pgAdmin login email |
+| `PGADMIN_DEFAULT_PASSWORD` | pgAdmin login password |
 
 ### `backend/.env` — Go server
 
@@ -191,10 +214,13 @@ All endpoints are under `/api`. Images are served statically from `/uploads`.
 | `DB_PASSWORD` | — | PostgreSQL password |
 | `DB_NAME` | `calendardb` | PostgreSQL database name |
 | `DB_SSLMODE` | `disable` | SSL mode (`disable` for local) |
+| `JWT_SECRET` | — | Secret used to sign JWTs — required (generate with `openssl rand -hex 32`) |
+| `SEED_USER_EMAIL` | — | Email of the user created by `go run ./cmd/seed` |
+| `SEED_USER_PASSWORD` | — | Password of the seed user |
 
 ### `frontend/.env` — Vite
 
 | Variable | Description |
 |---|---|
 | `BACKEND_URL` | Backend URL for the Vite dev proxy (Node only) |
-| `VITE_API_URL` | Backend URL exposed to the browser bundle. Empty in dev (proxy handles it), full URL in production |
+| `VITE_API_URL` | Backend URL exposed to the browser bundle. Must always be defined: empty in dev (the proxy takes over), full public URL in production |
